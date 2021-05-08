@@ -1,4 +1,4 @@
-prova\_01
+Prova 01
 ================
 Rosenilda Pereira Barreto</br>
 Introdução a Estatística 2020.1

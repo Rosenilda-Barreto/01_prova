@@ -1,5 +1,5 @@
 ---
-title: "prova_01"
+title: "Prova 01"
 author: "Rosenilda Pereira Barreto</br>"
 date: "Introdução a Estatística 2020.1"
 output: github_document
