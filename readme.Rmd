@@ -1,0 +1,204 @@
+---
+title: "prova_01"
+author: "Rosenilda Pereira Barreto</br>"
+date: "Introdução a Estatística 2020.1"
+output: github_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+**Questão 01**
+
+**(a)** Fiz a distribuição de frequência da variável ordem em ordem crecente usando o seguinte código:
+
+```{r}
+peixes_rio_madeira <- read_csv("dados/brutos/peixes_rio_madeira.csv")
+
+peixes_rio_madeira %>% 
+  count(ordem) %>% 
+  arrange(n)
+
+```
+
+**(b)** Observando a tabela de frequência criada no item (a), a maioria dos peixes pertencem a ordem Characiformes, ordem que totaliza 64356 peixes.
+
+**(c)** Observando a tabela de frequência do item (a), 17 peixes não foram identificados na variável ordem.
+
+**Questão 02**
+Fiz uma tabela de frequência relacionando a média, o desvio padrão e o coeficiente de variação para simultaneamente obter as médias, compará-las e observar se é ou não o mais adequado usar o coeficiente de variação para comparar a variabilidade. Segue o código que usei:
+
+```{r}
+peixes_rio_madeira%>%
+  select(bacia, ordem, peso_g)%>%
+  filter(bacia == "Rio Guaporé")%>%
+  group_by(ordem)%>%
+  summarise(
+    media_peso = mean(peso_g,na.rm = TRUE),
+    desvio_peso = sd(peso_g,na.rm = TRUE),
+    coeficiente_variacao_peso = ((desvio_peso/media_peso)*100)
+  )
+```
+
+**(a)** Observando a tabela de frequência criada, como as médias de cada categoria da variável ordem são distintas,o coeficiente de variação é a melhor forma para avaliar a variabilidade da variável ordem.
+
+**(b)** Como os peixes Clupeiformes possuem menor coeficiente de variação (78.2), então esses são peixes de distribuição do peso mais homogênea.
+
+**Questão 03** Para recodificar a variável sexo por sexo_recode, primeiro observei quais são todas as categorias da variável sexo. Para tanto,usei o código:
+
+```{r}
+peixes_rio_madeira%>%
+  group_by(sexo)%>%
+  summarise(
+    n = n()
+  )
+```
+Assim, foi preciso igualar as categorias Fêmea e fêmea para fazer a recodificação. Usei, então, esse código, onde para além de fazer a recodificação fornece as frequências percentual de todas as categorias Fêmea, Macho e Não coletado:
+
+```{r}
+peixes_rio_madeira%>%
+mutate(
+sexo_recode = recode(
+      sexo,
+"Fêmea" = "Fêmea",
+"fêmea" = "Fêmea",
+"Macho" = "Macho"
+    )
+    )%>%
+  count(sexo_recode)%>%
+  summarise(
+    sexo_recode = sexo_recode,
+    frequencia = ((n/49800)*100)
+  )
+```
+
+**(a)** Fazendo a diferença entre a frequência percentual entre Fêmea e Macho $$56.9 - 43.1$$, que dá $$13.8$$, é preciso que haja um aumento percentual de $$13.8%$$ no total da categoria Machos para igualar a quantidade percentual de Machos e Fêmeas.
+
+**(b)** Para saber qual o sexo de peixe que apresenta o maior peso, usei o código a seguir, onde a ordem do peso_g aparece de forma decrescente. Rodando o código, percebe-se que o peixe de maior peso é um peixe fêmea.
+
+```{r}
+peixes_rio_madeira%>%
+  group_by(peso_g)%>%
+  mutate(
+    sexo_recode = recode(
+            sexo,
+      "Fêmea" = "Fêmea",
+      "fêmea" = "Fêmea",
+      "Macho" = "Macho"
+    )
+  )%>%
+  count(sexo_recode)%>%
+  summarise(
+    sexo_recode = sexo_recode,
+    frequencia = ((n/49800)*100)
+  )%>%
+  arrange(desc(peso_g))%>%
+  filter(sexo_recode == "Macho" | sexo_recode == "Fêmea")
+```
+
+
+**Questão 04** Para determinar qual o sexo correspondente a maior quantidade de peixes são carnívoros, fiz uma tabela de frequência, onde é possível observar a quantidade de peixes de cada categoria da variável sexo que possue cada tipo hábito alimentar. Rodando o código que segue, $$8552$$ peixes machos são carnívoros.
+
+```{r}
+peixes_rio_madeira%>%
+    group_by(sexo, habito_alimentar)%>%
+    count(habito_alimentar)%>%
+    summarise(
+      habito_alimentar = habito_alimentar,
+      frequencia = n,
+      sexo = sexo
+    )
+  
+```
+
+**Questão 05** Rodando o primeiro código a seguir eu pode ler o dataset, alterando a variável rendimento_liquido para numeric. E rodando o segundo, obtive que o maior rendimento líquido é $$132984$$.
+
+```{r}
+contracheque <- read_csv("dados/brutos/contracheque.csv", col_types = cols(rendimento_liquido = col_number()))
+
+```
+
+
+```{r}
+contracheque%>%
+  select(rendimento_liquido)%>%
+  arrange(desc(rendimento_liquido))
+```
+
+
+ **Questão 06** Rodando o código que segue é possível determinar a quantidade de funcionários públicos que recebem salário acima de $$R$39293,32$$, que são $$106$$ no total. 
+```{r}
+contracheque%>%
+  select(rendimento_liquido)%>%
+  filter(rendimento_liquido > 39293.32)%>%
+count()
+```
+ 
+**(a) Recebem acima de $$R$100000,00$$ duas pessoas, conforme o código que segue
+```{r}
+contracheque%>%
+  select(rendimento_liquido)%>%
+  filter(rendimento_liquido > 100000)%>%
+  count()
+```
+**(b)** Para saber qual o tribunal possue maior variabilidade usei o coeficiente de variação, sendo o maior identificado o correspondente ao tribunal mais homogêneo. Assim, precisei calcular média e desvio padrão para determinar o coeficiente de variação e ordenar de forma decrescente o coeficiente de variação para visualizar o tribunal mais variável. Rodando o código abaixo, percebi que o tribunal de maior variabilidade é o Tribunal Superior Eleitoral.
+```{r}
+contracheque%>%
+  select(rendimento_liquido, tribunal)%>%
+  group_by(tribunal)%>%
+  summarise(
+    media_rendimento = mean(rendimento_liquido, na.rm = TRUE),
+    desvio = sd(rendimento_liquido, na.rm = TRUE),
+    cv = ((desvio/media_rendimento)*100)
+  )%>%
+  arrange(desc(cv))
+```
+
+**Questão 07**
+**(a)** O turno que possui maior mediana das notas é o turno integral, pois o segundo quartil representado na caixa do Boxplot do turno integral, que representa a mediana, é o que está mais acima (eixo y) em relação aos demais Boxplots.
+**(b)** Rodando o código abaixo, obtive que a média e a mediana das notas do turno integral, são aproximadamente, respectivamente, $$663$$ e $$657$$.
+
+```{r}
+library(readr)
+cursos_prouni <- read_csv("dados/brutos/cursos-prouni.csv")
+cursos_prouni%>%
+  group_by(turno)%>%
+  summarise(
+    media_nota = mean(nota_integral_ampla, na.rm = TRUE),
+    mediana_nota = median(nota_integral_ampla, na.rm = TRUE)
+  )
+```
+**(c)** Rodando o código seguinte, obtive que o curso de menor homogeneidade é o Curso a Distância, pois o coeficiente de variação (cv) foi o maior encontrado.
+```{r}
+cursos_prouni%>%
+  select(turno, nota_integral_ampla)%>%
+  group_by(turno)%>%
+  summarise(
+    media_nota = mean(nota_integral_ampla, na.rm = TRUE),
+    desvio_nota = sd(nota_integral_ampla, na.rm = TRUE),
+    cv = ((desvio_nota/media_nota)*100)
+    )%>%
+arrange(desc(cv))
+```
+**Questão 08** A quinta posição, conforme o exibido ao rodar o código que segue.
+
+```{r}
+cursos_prouni%>%
+  group_by(uf_busca)%>%
+  count()%>%
+  arrange(desc(n))
+```
+
+**Questão 09** Rodando o código abaixo, obtive que há 295 cursos distintos.
+
+```{r}
+cursos_prouni%>%
+  distinct(nome)
+```
+
+**Questão 10** O gráfico do curso de direito possui distribuição mais homogênea do que o do curso de medicina já que aparentemente se trata de uma curva normal. Assim, provavelmente a média,a mediana e a moda desse gráfico coincidem. Já o gráfico do curso de medicina representa uma distribuição assimétrica para a direita.Logo, a mediana é a melhor medida de posição central para representar as informações desse gráfico. Devido a concentração de valores muito altos do gráfico referente ao curso de medicina, comparando-o co o gráfico de direito, o curso de medicina tem média maior. Com respeito a mediana, provavelmente a do curso de direito é maior do que o do curso de medicina, devido a simetria desse grafico.  
+
